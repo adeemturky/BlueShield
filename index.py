@@ -20,12 +20,13 @@ CORTEX_SEARCH_SERVICE = "SOC_SEARCH_SERVICE_CS"
 
 # Snowflake connection parameters
 connection_parameters = {
-    "account": "RIB89968.us-east-1",
-    "user": "suryaremanan",
-    "password": "SuryaAdeem123@",  # Replace with actual password
-    "warehouse": "COMPUTE_WH",
-    "database": "SOC_DB",
-    "schema": "SOC_SCHEMA"
+  "account":  "AQB01179.us-east-1",
+  "user": "surya123",
+  "password": "SuryaAdeem123@",
+  "role": "ACCOUNTADMIN",
+  "database": "SOC_DB",
+  "schema": "SOC_SCHEMA",
+  "warehouse": "COMPUTE_WH"
 }
 
 # Initialize Snowflake session
