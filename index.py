@@ -188,8 +188,8 @@ def render_visualization(selected_category):
 # Main function to run the Streamlit app
 def main():
     initialize_session_state()
-    st.sidebar.title("CyberSOC Catalyst 🛡️")  # Updated sidebar title
-    st.title("CyberSOC Catalyst 🛡️")  # Updated sidebar title
+    st.sidebar.title("BLUSHIELD 🛡️")  # Updated sidebar title
+    st.title("BLUSHIELD 🛡️")  # Updated sidebar title
     st.write("This is the list of documents you already have and that will be used to answer your questions:")
     docs_available = session.sql("LS @docs").collect()
 
