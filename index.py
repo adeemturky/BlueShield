@@ -101,13 +101,13 @@ def initialize_session_state():
     if "rag" not in st.session_state:
         st.session_state["rag"] = False
     if "model_name" not in st.session_state:
-        st.session_state["model_name"] = "mistral-large"
+        st.session_state["model_name"] = "mistral-large2"
     if "category_value" not in st.session_state:
         st.session_state["category_value"] = "ALL"
 
 # Configure sidebar options
 def config_options():
-    st.sidebar.selectbox('Select your model:', ('mistral-large',), key="model_name")
+    st.sidebar.selectbox('Select your model:', ('mistral-large2',), key="model_name")
 
     categories = session.sql("SELECT DISTINCT CATEGORY FROM SOC_DB.SOC_SCHEMA.DOCS_CHUNKS_TABLE").to_pandas()["CATEGORY"].tolist()
     cat_list = ['ALL'] + categories
