@@ -17,7 +17,8 @@ Here is an example prompt :
 To which the app gave the following response
 
 
-![[demo.mov]]
+<iframe width="560" height="315" src="[https://www.youtube.com/embed/DXqBDTXEJR8]" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 
 It also gives visualisations based on the category of the logs. The category ranges from `Security`, `Malware`, `Vulnerability` and many more. Here is what it looks like:
 
