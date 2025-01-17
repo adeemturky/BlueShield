@@ -23,7 +23,8 @@ To which the app gave the following response
 
 It also gives visualisations based on the category of the logs. The category ranges from `Security`, `Malware`, `Vulnerability` and many more. Here is what it looks like:
 
-![[viz.mov]]
+[![Your Video Title](https://img.youtube.com/vi/bULfWXs0CdY/0.jpg)](https://www.youtube.com/watch?v=bULfWXs0CdY)
+
 ## How it was built 
 
 For the sake of the initial working prototype, the National Vulnerability Dataset (NVD) was taken, with approximately 66k records. A python script was written to scrape the data in csv format. It contained all the details about various log categories ranging from the year 1999 to 2015. The fine-tuning of the Mistral-large2 LLM on this data along with Retrieval Augmented Generation was done using Cortex Search Service on Snowflake. The programming languages used were python and SQL. Python was used to preprocess and clean the data. It was also used to make the Streamlit app. SQL was used to create databases, schema, and loading data to Snowflake.   
