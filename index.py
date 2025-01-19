@@ -190,7 +190,7 @@ def main():
     initialize_session_state()
     st.sidebar.title("BLUSHIELD 🛡️")  # Updated sidebar title
     st.title("BLUSHIELD 🛡️")  # Updated sidebar title
-    st.write("This is the list of documents you already have and that will be used to answer your questions:")
+    st.write("This model has been fine-tuned on National Vulnerability Dataset, ask any query regarding that.")
     docs_available = session.sql("LS @docs").collect()
 
     selected_category = config_options()
