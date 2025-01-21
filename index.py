@@ -19,6 +19,7 @@ connection_parameters = {
 }
 session = Session.builder.configs(connection_parameters).create()
 
+
 # Set pandas display option
 pd.set_option("max_colwidth", None)
 
@@ -82,7 +83,7 @@ class RAGFromScratch:
         Recommended Actions:
         Do not hallucinate or provide speculative information.
         Be concise and do not hallucinate.
-        If you don't have the information, just say so. Ensure your answer should be formatted properly, like a report
+        If you don't have the information, just say so. ensure your answer should be formatted properly, like a report
         Context: {context_str}
         Question: {query}
         Answer:
@@ -116,7 +117,7 @@ def config_options():
 
 # Function for visualization
 def render_visualization(selected_category):
-    st.header("\ud83d\udcca Data Visualization Dashboard")
+    st.header("📊 Data Visualization Dashboard")
 
     # Fetch data directly from Snowflake table
     if selected_category == "ALL":
@@ -143,6 +144,7 @@ def render_visualization(selected_category):
             "Category Distribution", 
             "Base Severity Distribution", 
             "Average Base Score"
+            # "Combined Metrics"
         ),
         specs=[[{"type": "bar"}, {"type": "bar"}], [{"type": "scatter"}, {"type": "scatter"}]]
     )
@@ -165,10 +167,16 @@ def render_visualization(selected_category):
         row=2, col=1
     )
 
+    # Panel 4: Combined metrics
+    # fig.add_trace(
+    #     go.Scatter(x=avg_base_score["Category"], y=avg_base_score["Average Base Score"], mode="lines", name="Combined Metrics"),
+    #     row=2, col=2
+    # )
+
     # Update layout to mimic Grafana's dark theme
     fig.update_layout(
         template="plotly_dark",
-        title="Data Visualization Dashboard",
+        title="Data Visualization Dashboard",  # Updated title
         title_font_size=20,
         showlegend=True,
         height=700
@@ -176,29 +184,21 @@ def render_visualization(selected_category):
 
     st.plotly_chart(fig, use_container_width=True)
 
+
 # Main function to run the Streamlit app
 def main():
     initialize_session_state()
-    st.sidebar.title("BLUSHIELD \ud83d\udee1\ufe0f")
-    st.title("BLUSHIELD \ud83d\udee1\ufe0f")
+    st.sidebar.title("BLUSHIELD 🛡️")  # Updated sidebar title
+    st.title("BLUSHIELD 🛡️")  # Updated sidebar title
     st.write("This model has been fine-tuned on National Vulnerability Dataset, ask any query regarding that.")
+    docs_available = session.sql("LS @docs").collect()
 
     selected_category = config_options()
 
     options = st.sidebar.radio("Choose a feature:", ["Query", "Visualization"])
 
     if options == "Query":
-        st.write("### Example Queries:")
-        example_queries = [
-            "Explain how privilege escalation can occur on legacy systems and recommend defensive strategies.",
-            "Provide a step-by-step guide to mitigate a detected privilege escalation attempt on an outdated OS.",
-            "Explain the implications of leaving legacy systems exposed to the public internet.",
-            "What are the key vulnerabilities in systems using outdated SSL certificates?",
-            "How can network segmentation help prevent lateral movement in a compromised environment?"
-        ]
-        selected_query = st.selectbox("Select an example query:", [""] + example_queries, index=0)
-
-        question = st.text_input("Enter question", value=selected_query if selected_query else "", placeholder="Ask any questions regarding NVD_CVES dataset?", label_visibility="collapsed")
+        question = st.text_input("Enter question", placeholder="Ask any questions regarding NVD_CVES dataset?", label_visibility="collapsed")
 
         if question:
             retriever = CortexSearchRetriever(
@@ -228,4 +228,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
