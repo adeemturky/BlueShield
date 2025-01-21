@@ -195,11 +195,13 @@ def main():
     # Sample queries expander
     with st.expander("Sample Queries"):
         sample_queries = [
-            "Identify all known vulnerabilities associated with Apache server versions released before 1999.",
-            "Provide exploitation scenarios for web app firewalls with outdated firmware or configurations.",
-            "Explain how privilege escalation can occur on legacy systems and recommend defensive strategies.",
-            "Analyze CVEs related to buffer overflow vulnerabilities in systems prior to 1999.",
-            "List common attack vectors that can bypass web application firewalls for systems running outdated OS versions."
+             "Explain how privilege escalation can occur on legacy systems and recommend defensive strategies."
+              "How can I identify exploitation attempts for CVEs related to operating systems released after 1999?"
+              "Suggest methods to sandbox legacy systems to minimize the impact of exploitation."
+              
+              "What are the legal and compliance considerations for operating legacy servers in a production environment?"
+              
+              "Generate a list of tools commonly used to attack outdated Apache servers, and suggest countermeasures."
         ]
         for i, query in enumerate(sample_queries):
             if st.button(f"Query {i + 1}: {query}"):
