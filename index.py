@@ -187,7 +187,7 @@ def config_options():
 def render_visualization(selected_category):
     st.header("📊 Enhanced Data Visualization Dashboard")
 
-    # Fetch data from Snowflake table
+    # Fetch data directly from Snowflake
     if selected_category == "ALL":
         query = "SELECT CATEGORY, BASE_SEVERITY, BASE_SCORE FROM SOC_DB.SOC_SCHEMA.DOCS_CHUNKS_TABLE"
     else:
@@ -195,56 +195,88 @@ def render_visualization(selected_category):
 
     df = session.sql(query).to_pandas()
 
-    # Aggregations
-    category_distribution = df["CATEGORY"].value_counts().reset_index()
-    category_distribution.columns = ["Category", "Count"]
+    # Aggregate Data
+    severity_distribution = df.groupby(["BASE_SEVERITY"])["CATEGORY"].count().reset_index()
+    severity_distribution.columns = ["Severity", "Count"]
 
-    severity_distribution = df["BASE_SEVERITY"].value_counts().reset_index()
-    severity_distribution.columns = ["Base Severity", "Count"]
+    avg_scores_by_severity = df.groupby("BASE_SEVERITY")["BASE_SCORE"].mean().reset_index()
+    avg_scores_by_severity.columns = ["Severity", "Average Base Score"]
 
-    avg_base_score = df.groupby("CATEGORY")["BASE_SCORE"].mean().reset_index()
-    avg_base_score.columns = ["Category", "Average Base Score"]
+    top_categories = df["CATEGORY"].value_counts().head(10).reset_index()
+    top_categories.columns = ["Category", "Count"]
 
-    severity_vs_category = pd.crosstab(df["BASE_SEVERITY"], df["CATEGORY"])
+    severity_by_category = df.groupby(["CATEGORY", "BASE_SEVERITY"]).size().reset_index(name="Count")
 
-    # Create Pie Chart for Category Distribution
-    pie_chart = go.Figure(data=[go.Pie(
-        labels=category_distribution["Category"],
-        values=category_distribution["Count"],
-        hole=0.4
-    )])
-    pie_chart.update_layout(title_text="Category Distribution (Pie Chart)")
+    # Stacked Bar Chart for Severity by Top Categories
+    top_category_severity = severity_by_category[severity_by_category["CATEGORY"].isin(top_categories["Category"])]
+    stacked_bar_chart = go.Figure()
 
-    # Create Heatmap for Severity vs. Categories
-    heatmap = go.Figure(data=go.Heatmap(
-        z=severity_vs_category.values,
-        x=severity_vs_category.columns,
-        y=severity_vs_category.index,
-        colorscale='Viridis'
+    for severity in df["BASE_SEVERITY"].unique():
+        subset = top_category_severity[top_category_severity["BASE_SEVERITY"] == severity]
+        stacked_bar_chart.add_trace(
+            go.Bar(
+                x=subset["CATEGORY"],
+                y=subset["Count"],
+                name=severity
+            )
+        )
+
+    stacked_bar_chart.update_layout(
+        barmode="stack",
+        title="Severity Distribution by Top Categories",
+        template="plotly_dark",
+        xaxis_title="Category",
+        yaxis_title="Count",
+        height=500
+    )
+
+    # Bubble Chart for Categories
+    bubble_chart = go.Figure(data=go.Scatter(
+        x=df["BASE_SEVERITY"],
+        y=df["BASE_SCORE"],
+        mode="markers",
+        marker=dict(
+            size=df["BASE_SCORE"],
+            color=df["BASE_SCORE"],
+            colorscale="Viridis",
+            showscale=True
+        ),
+        text=df["CATEGORY"]
     ))
-    heatmap.update_layout(title_text="Severity vs. Category Heatmap")
+    bubble_chart.update_layout(
+        title="Severity vs. Base Score (Bubble Chart)",
+        template="plotly_dark",
+        xaxis_title="Base Severity",
+        yaxis_title="Base Score",
+        height=500
+    )
 
-    # Create Bar Chart for Base Severity Distribution with Gradient
-    bar_chart = go.Figure(data=[go.Bar(
-        x=severity_distribution["Base Severity"],
-        y=severity_distribution["Count"],
-        marker=dict(color=severity_distribution["Count"], colorscale='Bluered'),
+    # KPI Metrics
+    kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
+    with kpi_col1:
+        st.metric("Total Categories", len(df["CATEGORY"].unique()))
+    with kpi_col2:
+        st.metric("Highest Base Score", round(df["BASE_SCORE"].max(), 2))
+    with kpi_col3:
+        st.metric("Lowest Base Score", round(df["BASE_SCORE"].min(), 2))
+
+    # Donut Chart for Severity Distribution
+    donut_chart = go.Figure(data=[go.Pie(
+        labels=severity_distribution["Severity"],
+        values=severity_distribution["Count"],
+        hole=0.5
     )])
-    bar_chart.update_layout(title_text="Base Severity Distribution")
+    donut_chart.update_layout(
+        title="Severity Distribution (Donut Chart)",
+        template="plotly_dark",
+        height=500
+    )
 
-    # Create Radar Chart for Average Base Score
-    radar_chart = go.Figure(data=[go.Scatterpolar(
-        r=avg_base_score["Average Base Score"],
-        theta=avg_base_score["Category"],
-        fill='toself'
-    )])
-    radar_chart.update_layout(polar=dict(radialaxis=dict(visible=True)), title_text="Average Base Score (Radar Chart)")
+    # Render Visualizations
+    st.plotly_chart(stacked_bar_chart, use_container_width=True)
+    st.plotly_chart(bubble_chart, use_container_width=True)
+    st.plotly_chart(donut_chart, use_container_width=True)
 
-    # Render Plots
-    st.plotly_chart(pie_chart, use_container_width=True)
-    st.plotly_chart(heatmap, use_container_width=True)
-    st.plotly_chart(bar_chart, use_container_width=True)
-    st.plotly_chart(radar_chart, use_container_width=True)
 
 
 
