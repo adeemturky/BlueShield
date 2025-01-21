@@ -195,11 +195,11 @@ def main():
     # Sample queries expander
     with st.expander("Sample Queries"):
         sample_queries = [
-             "Explain how privilege escalation can occur on legacy systems and recommend defensive strategies."
-              "How can I identify exploitation attempts for CVEs related to operating systems released after 1999?"
-              "Suggest methods to sandbox legacy systems to minimize the impact of exploitation."
+             "Explain how privilege escalation can occur on legacy systems and recommend defensive strategies.",
+              "How can I identify exploitation attempts for CVEs related to operating systems released after 1999?",
+              "Suggest methods to sandbox legacy systems to minimize the impact of exploitation.",
               
-              "What are the legal and compliance considerations for operating legacy servers in a production environment?"
+              "What are the legal and compliance considerations for operating legacy servers in a production environment?",
               
               "Generate a list of tools commonly used to attack outdated Apache servers, and suggest countermeasures."
         ]
