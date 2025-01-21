@@ -116,10 +116,78 @@ def config_options():
     return selected_category
 
 # Function for visualization
-def render_visualization(selected_category):
-    st.header("📊 Data Visualization Dashboard")
+# def render_visualization(selected_category):
+#     st.header("📊 Data Visualization Dashboard")
 
-    # Fetch data directly from Snowflake table
+#     # Fetch data directly from Snowflake table
+#     if selected_category == "ALL":
+#         query = "SELECT CATEGORY, BASE_SEVERITY, BASE_SCORE FROM SOC_DB.SOC_SCHEMA.DOCS_CHUNKS_TABLE"
+#     else:
+#         query = f"SELECT CATEGORY, BASE_SEVERITY, BASE_SCORE FROM SOC_DB.SOC_SCHEMA.DOCS_CHUNKS_TABLE WHERE CATEGORY = '{selected_category}'"
+
+#     df = session.sql(query).to_pandas()
+
+#     # Aggregate data for visualization
+#     category_distribution = df["CATEGORY"].value_counts().reset_index()
+#     category_distribution.columns = ["Category", "Count"]
+
+#     severity_distribution = df["BASE_SEVERITY"].value_counts().reset_index()
+#     severity_distribution.columns = ["Base Severity", "Count"]
+
+#     avg_base_score = df.groupby("CATEGORY")["BASE_SCORE"].mean().reset_index()
+#     avg_base_score.columns = ["Category", "Average Base Score"]
+
+#     # Create subplots
+#     fig = make_subplots(
+#         rows=2, cols=2,
+#         subplot_titles=(
+#             "Category Distribution", 
+#             "Base Severity Distribution", 
+#             "Average Base Score"
+#             # "Combined Metrics"
+#         ),
+#         specs=[[{"type": "bar"}, {"type": "bar"}], [{"type": "scatter"}, {"type": "scatter"}]]
+#     )
+
+#     # Panel 1: Bar chart for category distribution
+#     fig.add_trace(
+#         go.Bar(x=category_distribution["Category"], y=category_distribution["Count"], name="Category Distribution"),
+#         row=1, col=1
+#     )
+
+#     # Panel 2: Bar chart for base severity distribution
+#     fig.add_trace(
+#         go.Bar(x=severity_distribution["Base Severity"], y=severity_distribution["Count"], name="Base Severity Distribution"),
+#         row=1, col=2
+#     )
+
+#     # Panel 3: Scatter plot for average base score
+#     fig.add_trace(
+#         go.Scatter(x=avg_base_score["Category"], y=avg_base_score["Average Base Score"], mode="markers+lines", name="Average Base Score"),
+#         row=2, col=1
+#     )
+
+#     # Panel 4: Combined metrics
+#     # fig.add_trace(
+#     #     go.Scatter(x=avg_base_score["Category"], y=avg_base_score["Average Base Score"], mode="lines", name="Combined Metrics"),
+#     #     row=2, col=2
+#     # )
+
+#     # Update layout to mimic Grafana's dark theme
+#     fig.update_layout(
+#         template="plotly_dark",
+#         title="Data Visualization Dashboard",  # Updated title
+#         title_font_size=20,
+#         showlegend=True,
+#         height=700
+#     )
+
+#     st.plotly_chart(fig, use_container_width=True)
+
+def render_visualization(selected_category):
+    st.header("📊 Enhanced Data Visualization Dashboard")
+
+    # Fetch data from Snowflake table
     if selected_category == "ALL":
         query = "SELECT CATEGORY, BASE_SEVERITY, BASE_SCORE FROM SOC_DB.SOC_SCHEMA.DOCS_CHUNKS_TABLE"
     else:
@@ -127,7 +195,7 @@ def render_visualization(selected_category):
 
     df = session.sql(query).to_pandas()
 
-    # Aggregate data for visualization
+    # Aggregations
     category_distribution = df["CATEGORY"].value_counts().reset_index()
     category_distribution.columns = ["Category", "Count"]
 
@@ -137,52 +205,47 @@ def render_visualization(selected_category):
     avg_base_score = df.groupby("CATEGORY")["BASE_SCORE"].mean().reset_index()
     avg_base_score.columns = ["Category", "Average Base Score"]
 
-    # Create subplots
-    fig = make_subplots(
-        rows=2, cols=2,
-        subplot_titles=(
-            "Category Distribution", 
-            "Base Severity Distribution", 
-            "Average Base Score"
-            # "Combined Metrics"
-        ),
-        specs=[[{"type": "bar"}, {"type": "bar"}], [{"type": "scatter"}, {"type": "scatter"}]]
-    )
+    severity_vs_category = pd.crosstab(df["BASE_SEVERITY"], df["CATEGORY"])
 
-    # Panel 1: Bar chart for category distribution
-    fig.add_trace(
-        go.Bar(x=category_distribution["Category"], y=category_distribution["Count"], name="Category Distribution"),
-        row=1, col=1
-    )
+    # Create Pie Chart for Category Distribution
+    pie_chart = go.Figure(data=[go.Pie(
+        labels=category_distribution["Category"],
+        values=category_distribution["Count"],
+        hole=0.4
+    )])
+    pie_chart.update_layout(title_text="Category Distribution (Pie Chart)")
 
-    # Panel 2: Bar chart for base severity distribution
-    fig.add_trace(
-        go.Bar(x=severity_distribution["Base Severity"], y=severity_distribution["Count"], name="Base Severity Distribution"),
-        row=1, col=2
-    )
+    # Create Heatmap for Severity vs. Categories
+    heatmap = go.Figure(data=go.Heatmap(
+        z=severity_vs_category.values,
+        x=severity_vs_category.columns,
+        y=severity_vs_category.index,
+        colorscale='Viridis'
+    ))
+    heatmap.update_layout(title_text="Severity vs. Category Heatmap")
 
-    # Panel 3: Scatter plot for average base score
-    fig.add_trace(
-        go.Scatter(x=avg_base_score["Category"], y=avg_base_score["Average Base Score"], mode="markers+lines", name="Average Base Score"),
-        row=2, col=1
-    )
+    # Create Bar Chart for Base Severity Distribution with Gradient
+    bar_chart = go.Figure(data=[go.Bar(
+        x=severity_distribution["Base Severity"],
+        y=severity_distribution["Count"],
+        marker=dict(color=severity_distribution["Count"], colorscale='Bluered'),
+    )])
+    bar_chart.update_layout(title_text="Base Severity Distribution")
 
-    # Panel 4: Combined metrics
-    # fig.add_trace(
-    #     go.Scatter(x=avg_base_score["Category"], y=avg_base_score["Average Base Score"], mode="lines", name="Combined Metrics"),
-    #     row=2, col=2
-    # )
+    # Create Radar Chart for Average Base Score
+    radar_chart = go.Figure(data=[go.Scatterpolar(
+        r=avg_base_score["Average Base Score"],
+        theta=avg_base_score["Category"],
+        fill='toself'
+    )])
+    radar_chart.update_layout(polar=dict(radialaxis=dict(visible=True)), title_text="Average Base Score (Radar Chart)")
 
-    # Update layout to mimic Grafana's dark theme
-    fig.update_layout(
-        template="plotly_dark",
-        title="Data Visualization Dashboard",  # Updated title
-        title_font_size=20,
-        showlegend=True,
-        height=700
-    )
+    # Render Plots
+    st.plotly_chart(pie_chart, use_container_width=True)
+    st.plotly_chart(heatmap, use_container_width=True)
+    st.plotly_chart(bar_chart, use_container_width=True)
+    st.plotly_chart(radar_chart, use_container_width=True)
 
-    st.plotly_chart(fig, use_container_width=True)
 
 
 # Main function to run the Streamlit app
