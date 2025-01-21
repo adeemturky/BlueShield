@@ -198,7 +198,7 @@ def main():
         ]
         selected_query = st.selectbox("Select an example query:", [""] + example_queries, index=0)
 
-        question = st.text_input("Enter question", selected_query if selected_query else "", placeholder="Ask any questions regarding NVD_CVES dataset?", label_visibility="collapsed")
+        question = st.text_input("Enter question", value=selected_query if selected_query else "", placeholder="Ask any questions regarding NVD_CVES dataset?", label_visibility="collapsed")
 
         if question:
             retriever = CortexSearchRetriever(
@@ -228,3 +228,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
