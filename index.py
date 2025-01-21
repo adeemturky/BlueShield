@@ -188,19 +188,34 @@ def render_visualization(selected_category):
 # Main function to run the Streamlit app
 def main():
     initialize_session_state()
-    st.sidebar.title("BLUSHIELD 🛡️")  # Updated sidebar title
-    st.title("BLUSHIELD 🛡️")  # Updated sidebar title
-    st.write("This model has been fine-tuned on National Vulnerability Dataset, ask any query regarding that.")
-    docs_available = session.sql("LS @docs").collect()
+    st.sidebar.title("BLUSHIELD 🛡️")  # Sidebar title
+    st.title("BLUSHIELD 🛡️")  # Main title
+    st.write("This model has been fine-tuned on the National Vulnerability Dataset. Ask any query regarding that.")
+
+    # Sample queries expander
+    with st.expander("Sample Queries"):
+        sample_queries = [
+            "Identify all known vulnerabilities associated with Apache server versions released before 1999.",
+            "Provide exploitation scenarios for web app firewalls with outdated firmware or configurations.",
+            "Explain how privilege escalation can occur on legacy systems and recommend defensive strategies.",
+            "Analyze CVEs related to buffer overflow vulnerabilities in systems prior to 1999.",
+            "List common attack vectors that can bypass web application firewalls for systems running outdated OS versions."
+        ]
+        for i, query in enumerate(sample_queries):
+            if st.button(f"Query {i + 1}: {query}"):
+                st.session_state["user_query"] = query  # Set session state when a query is clicked
 
     selected_category = config_options()
 
     options = st.sidebar.radio("Choose a feature:", ["Query", "Visualization"])
 
     if options == "Query":
-        question = st.text_input("Enter question", placeholder="Ask any questions regarding NVD_CVES dataset?", label_visibility="collapsed")
+        # Prepopulate the question input field with the selected sample query
+        user_query = st.session_state.get("user_query", "")  # Get from session state or default to empty
+        question = st.text_input("Enter question", value=user_query, placeholder="Ask any questions regarding NVD_CVES dataset?")
 
         if question:
+            # Initialize the retriever and RAG model
             retriever = CortexSearchRetriever(
                 snowpark_session=session,
                 database=CORTEX_SEARCH_DATABASE,
@@ -210,9 +225,11 @@ def main():
             )
             rag = RAGFromScratch(retriever=retriever, model_name=st.session_state.model_name)
 
+            # Query and display the response
             response = rag.query(question, st.session_state.category_value)
             st.markdown(response)
 
+            # Related documents sidebar
             if st.session_state.rag:
                 with st.sidebar.expander("Related Documents"):
                     context_list = retriever.retrieve(question, st.session_state.category_value)
@@ -228,3 +245,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
